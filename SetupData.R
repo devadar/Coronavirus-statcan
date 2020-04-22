@@ -75,3 +75,98 @@ dataGraph <- rbind(dataGraph, Canada[, .(location, date, numdeaths, total_deaths
 
 rm(list = c("Canada","canadaSansQuebec","canadaSeulement","popCanadaSansQuebec"))
 
+
+statCanRaw <- read.csv(unzip("13100766-eng.zip","13100766.csv")) %>%
+  setDT()
+
+
+
+statCanCleaner <- dcast.data.table(statCanRaw,
+                                   formula = Case.identifier.number ~Case.information ,
+                                   value.var = "VALUE")
+rm(statCanRaw)
+#Ok, on ramène ça en données intéressantes.
+#les âges.
+statCanCleaner[`Age group` == 1, groupeAge := "0-19"]
+statCanCleaner[`Age group` == 2, groupeAge := "20-29"]
+statCanCleaner[`Age group` == 3, groupeAge := "30-39"]
+statCanCleaner[`Age group` == 4, groupeAge := "40-49"]
+statCanCleaner[`Age group` == 5, groupeAge := "50-59"]
+statCanCleaner[`Age group` == 6, groupeAge := "60-69"]
+statCanCleaner[`Age group` == 7, groupeAge := "70-79"]
+statCanCleaner[`Age group` == 8, groupeAge := "80 et +"]
+statCanCleaner[`Age group` == 99, groupeAge := "Indéterminé"]
+statCanCleaner[,groupeAge := as.factor(groupeAge)]
+#genre
+statCanCleaner[ Gender == 1, genre := "Homme"]
+statCanCleaner[ Gender == 2, genre := "Femme"]
+statCanCleaner[ Gender == 3, genre := "Non-binaire"]
+statCanCleaner[ Gender == 9, genre := "Indéterminé"]
+statCanCleaner[, genre := as.factor(genre)]
+
+#Mort ou pas
+statCanCleaner[`Death` == 1, `mort` := "Mort"]
+statCanCleaner[`Death` == 2, `mort` := "Vivant"]
+statCanCleaner[`Death` == 9, `mort` := "Indéterminé"]
+statCanCleaner[, mort := as.factor(mort)]
+
+#Transmission
+statCanCleaner[`Transmission` == 1, transmission := "Voyage"]
+statCanCleaner[`Transmission` == 2, transmission := "Communautaire"]
+statCanCleaner[`Transmission` == 3, transmission := "Indéterminée"]
+statCanCleaner[, transmission := as.factor(transmission)]
+
+#la date d'e l'Episode
+statCanCleaner[, dateEpisode := paste("2020", `Episode date - month`, `Episode date - day`, sep = "-")]
+statCanCleaner[, dateEpisode := as.Date(dateEpisode, tryFormats = c('%Y-%m-%d'))]
+#la date de l'update
+statCanCleaner[, dateUpdate := paste("2020", `Date case was last updated - month`, `Date case was last updated - day`, sep = "-")]
+statCanCleaner[, dateUpdate := as.Date(dateUpdate, tryFormats = c('%Y-%m-%d'))]
+
+#Hospitalisation
+statCanCleaner[`Hospitalization, previous status` == 1, etatAvant := as.factor("Hospitalisé") ]
+statCanCleaner[`Hospitalization, previous status` == 2, etatAvant := as.factor("À la maison") ]
+statCanCleaner[`Hospitalization, previous status` == 9, etatAvant := as.factor("Indéterminé") ]
+
+#Au soins Intensifs?
+statCanCleaner[`Intensive care unit` == 1, soinsIntensifs := TRUE]
+statCanCleaner[`Intensive care unit` == 2, soinsIntensifs := FALSE]
+statCanCleaner[`Intensive care unit` == 9, soinsIntensifs := NA]
+
+statCan <- statCanCleaner[,
+                          .(idUnique = Case.identifier.number,
+                            groupeAge,
+                            genre,
+                            mort,
+                            transmission,
+                            dateEpisode,
+                            dateUpdate,
+                            etatAvant,
+                            soinsIntensifs)
+                          ]
+statCan[groupeAge == '20-29', age := 25]
+statCan[groupeAge == "0-19", age := 12]
+statCan[groupeAge == "30-39", age := 35]
+statCan[groupeAge == "40-49", age := 45]
+statCan[groupeAge == "50-59", age := 55]
+statCan[groupeAge == "60-69", age := 65]
+statCan[groupeAge == "70-79", age := 75]
+statCan[groupeAge == "80 et +", age := 85]
+
+rm(statCanCleaner)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
