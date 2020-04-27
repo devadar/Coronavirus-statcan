@@ -107,7 +107,8 @@ statCanCleaner[, genre := as.factor(genre)]
 #Mort ou pas
 statCanCleaner[`Death` == 1, `mort` := "Mort"]
 statCanCleaner[`Death` == 2, `mort` := "Vivant"]
-statCanCleaner[`Death` == 9, `mort` := "Indéterminé"]
+#statCanCleaner[`Death` == 9, `mort` := "Indéterminé"] #Peut-on vraiment être indéterminé?
+statCanCleaner[`Death` == 9, `mort` := "Vivant"]
 statCanCleaner[, mort := as.factor(mort)]
 
 #Transmission
@@ -127,7 +128,9 @@ statCanCleaner[, dateUpdate := as.Date(dateUpdate, tryFormats = c('%Y-%m-%d'))]
 statCanCleaner[`Hospitalization, previous status` == 1, etatAvant := as.factor("Hospitalisé") ]
 statCanCleaner[`Hospitalization, previous status` == 2, etatAvant := as.factor("À la maison") ]
 statCanCleaner[`Hospitalization, previous status` == 9, etatAvant := as.factor("Indéterminé") ]
-
+statCanCleaner[`Hospitalization` == 1, etatMaintenant := as.factor("Hospitalisé")]
+statCanCleaner[`Hospitalization` == 2, etatMaintenant := as.factor("À la maison")]
+statCanCleaner[`Hospitalization` == 9, etatMaintenant := as.factor("Indéterminé")]
 #Au soins Intensifs?
 statCanCleaner[`Intensive care unit` == 1, soinsIntensifs := TRUE]
 statCanCleaner[`Intensive care unit` == 2, soinsIntensifs := FALSE]
@@ -142,6 +145,7 @@ statCan <- statCanCleaner[,
                             dateEpisode,
                             dateUpdate,
                             etatAvant,
+                            etatMaintenant,
                             soinsIntensifs)
                           ]
 statCan[groupeAge == '20-29', age := 25]
@@ -152,6 +156,10 @@ statCan[groupeAge == "50-59", age := 55]
 statCan[groupeAge == "60-69", age := 65]
 statCan[groupeAge == "70-79", age := 75]
 statCan[groupeAge == "80 et +", age := 85]
+
+statCan[etatMaintenant == 'Hospitalisé' & soinsIntensifs == FALSE, etatBrute := as.factor('Hospitalisé')]
+statCan[etatMaintenant == 'Hospitalisé' & soinsIntensifs == TRUE, etatBrute := as.factor('Soins Intensifs')]
+statCan[etatMaintenant == 'À la maison', etatBrute := as.factor('À la maison')]
 
 rm(statCanCleaner)
 
