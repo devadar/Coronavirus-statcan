@@ -3,7 +3,7 @@
 source("SetupData.R")
 library("viridis")
 
-locationInteressante <- c("Canada","Quebec","CanadaSansQuebec","Netherlands",  "Sweden", "Italy", "Singapore")
+locationInteressante <- c("Canada","Quebec","CanadaSansQuebec","Netherlands",  "Sweden", "Italy", "United Kingdom")
 
 dataOffSetDeathsPM <- 10
 
@@ -14,7 +14,7 @@ dataGrapher <- dataGraph[total_deaths_per_million >= dataOffSetDeathsPM &
                            , joursEcoules := (1:.N), by = location]
 dataGrapher <- dataGrapher[joursEcoules > 0]
 
-dernièreEntreeQueb <- max(dataGrapher[location == "Quebec"
+dernièreEntreeQueb <- max(dataGrapher[#location == "Quebec"
                                       , joursEcoules]) +8
 #dataGrapher[location == "Quebec", joursEcoules := as.integer(joursEcoules -2) ]
 
@@ -28,6 +28,7 @@ graph + geom_point() + geom_line()+
   xlab("Nb de jours depuis 10 morts/1M d'habitants") +
   xlim(1,dernièreEntreeQueb) +
   scale_color_viridis(discrete = TRUE)
+
 
 
 graph2 <- ggplot(data = statCan[dateEpisode <= dateGraph & mort == "Mort" & !is.na(etatAvant)],
