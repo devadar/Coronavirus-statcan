@@ -75,7 +75,8 @@ dataGraph <- rbind(dataGraph, Canada[, .(location, date, numdeaths, total_deaths
 
 rm(list = c("Canada","canadaSansQuebec","canadaSeulement","popCanadaSansQuebec"))
 
-
+download.file(url="https://www150.statcan.gc.ca/n1/en/tbl/csv/13100766-eng.zip?st=WOEkv7Fl",
+              destfile='13100766-eng.zip', method='libcurl')
 statCanRaw <- read.csv(unzip("13100766-eng.zip","13100766.csv")) %>%
   setDT()
 
