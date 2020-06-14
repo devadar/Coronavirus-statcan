@@ -13,3 +13,8 @@ deces <- merge(nbCas, nbMorts,
                all.x = T, all.y = T)
 
 deces[, tauxMortalité := nbMorts/nbCas*100]
+
+nbCasPasNa <- statCan[dateEpisode <= dateGraph & groupeAge == "0-19" & !is.na(etatBrute)
+                      ,.(nbCasPasNa = .N)]
+nbHospitalisation <- statCan[dateEpisode <= dateGraph & groupeAge == "0-19" & !is.na(etatBrute) & etatBrute == "Hospitalisé",
+                             .(nbHospitalisation = .N)]
