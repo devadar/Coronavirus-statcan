@@ -85,41 +85,39 @@ rm(list = c("Canada","canadaSansQuebec","canadaSeulement","popCanadaSansQuebec")
 
 
 # 
-# download.file(url="https://www150.statcan.gc.ca/n1/en/tbl/csv/13100781-eng.zip?st=wFXx6L5K",
-#               destfile='13100781-eng.zip', method='libcurl')
-# statCanRaw <- read.csv(unzip("13100781-eng.zip","13100781.csv")) %>%
-#   setDT()
-# 
-# 
-# 
-# statCanCleaner <- dcast.data.table(statCanRaw,
-#                                    formula = Case.identifier.number ~Case.information ,
-#                                    value.var = "VALUE")
-# rm(statCanRaw)
+download.file(url="https://www150.statcan.gc.ca/n1/en/tbl/csv/13100781-eng.zip",
+              destfile='13100781-eng.zip', method='libcurl')
+ statCanRaw <- read.csv(unzip("13100781-eng.zip","13100781.csv")) %>%
+   setDT()
+
+ statCanCleaner <- dcast.data.table(statCanRaw,
+                                    formula = Case.identifier.number ~Case.information ,
+                                    value.var = "VALUE")
+ rm(statCanRaw)
 # #Ok, on ramène ça en données intéressantes.
 # #les âges.
-# statCanCleaner[`Age group` == 1, groupeAge := "0-19"]
-# statCanCleaner[`Age group` == 2, groupeAge := "20-29"]
-# statCanCleaner[`Age group` == 3, groupeAge := "30-39"]
-# statCanCleaner[`Age group` == 4, groupeAge := "40-49"]
-# statCanCleaner[`Age group` == 5, groupeAge := "50-59"]
-# statCanCleaner[`Age group` == 6, groupeAge := "60-69"]
-# statCanCleaner[`Age group` == 7, groupeAge := "70-79"]
-# statCanCleaner[`Age group` == 8, groupeAge := "80 et +"]
-# statCanCleaner[`Age group` == 99, groupeAge := "Indéterminé"]
-# statCanCleaner[,groupeAge := as.factor(groupeAge)]
+statCanCleaner[`Age group` == 1, groupeAge := "0-19"]
+statCanCleaner[`Age group` == 2, groupeAge := "20-29"]
+statCanCleaner[`Age group` == 3, groupeAge := "30-39"]
+statCanCleaner[`Age group` == 4, groupeAge := "40-49"]
+statCanCleaner[`Age group` == 5, groupeAge := "50-59"]
+statCanCleaner[`Age group` == 6, groupeAge := "60-69"]
+statCanCleaner[`Age group` == 7, groupeAge := "70-79"]
+statCanCleaner[`Age group` == 8, groupeAge := "80 et +"]
+statCanCleaner[`Age group` == 99, groupeAge := "Indéterminé"]
+statCanCleaner[,groupeAge := as.factor(groupeAge)]
 # #genre
-# statCanCleaner[ Gender == 1, genre := "Homme"]
-# statCanCleaner[ Gender == 2, genre := "Femme"]
-# statCanCleaner[ Gender == 3, genre := "Non-binaire"]
-# statCanCleaner[ Gender == 9, genre := "Indéterminé"]
-# statCanCleaner[, genre := as.factor(genre)]
+statCanCleaner[ Gender == 1, genre := "Homme"]
+statCanCleaner[ Gender == 2, genre := "Femme"]
+statCanCleaner[ Gender == 3, genre := "Non-binaire"]
+statCanCleaner[ Gender == 9, genre := "Indéterminé"]
+statCanCleaner[, genre := as.factor(genre)]
 # 
 # #Mort ou pas
-# statCanCleaner[`Death` == 1, `mort` := "Mort"]
-# statCanCleaner[`Death` == 2, `mort` := "Vivant"]
-# #statCanCleaner[`Death` == 9, `mort` := "Indéterminé"] #Peut-on vraiment être indéterminé?
-# statCanCleaner[`Death` == 9, `mort` := "Vivant"]
+statCanCleaner[`Death` == 1, `mort` := "Mort"]
+statCanCleaner[`Death` == 2, `mort` := "Vivant"]
+#statCanCleaner[`Death` == 9, `mort` := "Indéterminé"] #Peut-on vraiment être indéterminé?
+statCanCleaner[`Death` == 9, `mort` := "Vivant"]
 # statCanCleaner[, mort := as.factor(mort)]
 # 
 # #Transmission
@@ -129,19 +127,37 @@ rm(list = c("Canada","canadaSansQuebec","canadaSeulement","popCanadaSansQuebec")
 # statCanCleaner[, transmission := as.factor(transmission)]
 # 
 # 
-# statCan <- statCanCleaner[,
-#                           .(idUnique = Case.identifier.number,
-#                             groupeAge,
-#                             genre,
-#                             mort,
-#                             #transmission,
-#                             semaine.Episode = `Episode week`,
-#                             #dateUpdate,
-#                             #etatAvant,
-#                             #etatMaintenant
-#                             #soinsIntensifs
-#                             )
-#                           ]
+
+# # Hospitalisation
+statCanCleaner[`Hospital status` == 1, Hopital := "Soins intensifs" ]
+statCanCleaner[`Hospital status` == 2, Hopital := "Hospitalisation" ]
+statCanCleaner[`Hospital status` == 3, Hopital := "Maison" ]
+statCanCleaner[`Hospital status` == 9, Hopital := "Inconnu" ]
+statCanCleaner[, Hopital := as.factor(Hopital)]
+
+statCanCleaner[Region == 1, Province := "Atlantic" ]
+statCanCleaner[Region == 2, Province := "Québec"]
+statCanCleaner[Region == 3, Province := "Ontario/Nunavut"]
+statCanCleaner[Region == 4, Province := "Prairies/Territoire NO"]
+statCanCleaner[Region == 5, Province := "BC/Yukon"]
+statCanCleaner[, Province := as.factor(Province)]
+
+
+
+statCan <- statCanCleaner[,
+                          .(idUnique = Case.identifier.number,
+                            groupeAge,
+                            genre,
+                            mort,
+                            Province,
+                            #transmission,
+                            semaine.Episode = `Episode week`,
+                            Hopital
+                            #etatAvant,
+                            #etatMaintenant
+                            #soinsIntensifs
+                            )
+                          ]
 # statCan[groupeAge == '20-29', age := 25]
 # statCan[groupeAge == "0-19", age := 12]
 # statCan[groupeAge == "30-39", age := 35]
@@ -155,7 +171,7 @@ rm(list = c("Canada","canadaSansQuebec","canadaSeulement","popCanadaSansQuebec")
 # statCan[etatMaintenant == 'Hospitalisé' & soinsIntensifs == TRUE, etatBrute := as.factor('Soins Intensifs')]
 # statCan[etatMaintenant == 'À la maison', etatBrute := as.factor('À la maison')]
 # 
-# rm(statCanCleaner)
+ rm(statCanCleaner)
 # 
 # 
 # 
